@@ -1,0 +1,73 @@
+name: 'generate_packages'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-debian:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y debhelper dkms udev build-essential devscripts linux-headers-$(uname -r)
+        
+    - name: Build Debian package
+      run: |
+        dpkg-buildpackage -us -uc
+        
+    - name: Upload Debian packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: debian-packages-${{ matrix.os }}
+        path: |
+          ../*.deb
+        retention-days: 30
+
+  test-debian:
+    needs: build-debian
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Download Debian packages
+      uses: actions/download-artifact@v4
+      with:
+        name: debian-packages-${{ matrix.os }}
+        path: ./packages
+        
+    - name: Install Debian package
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y dkms linux-headers-$(uname -r)
+        sudo apt-get install -y ./packages/*.deb
+ 
+    - name: Verify kernel module installation
+      run: |
+        # Check if DKMS module is installed
+        dkms status tenstorrent || (echo "DKMS module not found" && exit 1)
+        
+        # Check if the module files exist
+        if [ ! -f "/lib/modules/$(uname -r)/updates/dkms/tenstorrent.ko" ] && [ ! -f "/lib/modules/$(uname -r)/extra/tenstorrent.ko" ]; then
+          echo "Kernel module file not found"
+          exit 1
+        fi
+        
+        # Try to load the module
+        sudo modprobe tenstorrent
+        
+        # Check if module is in the dependency tree
+        sudo depmod -a
+        modinfo tenstorrent
+        
+    - name: Verify package installation
+      run: |
+        dpkg -l | grep tenstorrent
+        dpkg -L tenstorrent-dkms 
