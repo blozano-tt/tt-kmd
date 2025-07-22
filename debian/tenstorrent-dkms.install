@@ -1,0 +1,20 @@
+AKMBUILD                          usr/src/tenstorrent-2.1.0/
+Makefile                          usr/src/tenstorrent-2.1.0/
+LICENSE                           usr/src/tenstorrent-2.1.0/
+LICENSE_understanding.txt         usr/src/tenstorrent-2.1.0/
+README.md                         usr/src/tenstorrent-2.1.0/
+SUMMARY.md                        usr/src/tenstorrent-2.1.0/
+
+dkms.conf                         usr/src/tenstorrent-2.1.0/
+dkms-post-install                 usr/src/tenstorrent-2.1.0/
+modprobe.d-tenstorrent.conf       usr/src/tenstorrent-2.1.0/
+udev-50-tenstorrent.rules         usr/src/tenstorrent-2.1.0/
+
+*.c                               usr/src/tenstorrent-2.1.0/
+*.h                               usr/src/tenstorrent-2.1.0/
+
+contrib                           usr/src/tenstorrent-2.1.0/
+docs                              usr/src/tenstorrent-2.1.0/
+tools                             usr/src/tenstorrent-2.1.0/
+test                              usr/src/tenstorrent-2.1.0/
+
